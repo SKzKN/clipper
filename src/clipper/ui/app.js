@@ -400,13 +400,13 @@ async function undo(redo) {
 }
 
 // Hand the edit to the AI editor. The page is held while it works so its changes do not collide with yours.
-async function direct(instruction) {
+async function direct(instruction, files = []) {
   player.pause();
   const hold = h('div.scrim', h('div.dialog', h('h3', 'The AI editor is working'),
     h('p.muted', 'DeepSeek is reading the transcript and making the changes. This can take a minute. One Undo takes it all back.')));
   document.body.append(hold);
   try {
-    const res = await runJob('/api/direct', { project: S.project.project, edl: S.edl.name, instruction });
+    const res = await runJob('/api/direct', { project: S.project.project, edl: S.edl.name, instruction, files });
     if (S.mode === 'rendered') setMode('live');
     applyEdl(res.edl);
     toast(res.summary, 'ok', 9000);

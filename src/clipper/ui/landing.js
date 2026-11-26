@@ -14,9 +14,8 @@ const PRODUCTS = [
   { name: 'Brand templates', text: 'Your captions, graphics and reference styles', to: 'teams' },
   { name: 'B-roll', text: 'Your own clips and images over the talk', to: 'preview' },
   { name: 'Editor', text: 'Edit the video by editing its text', to: 'editor' },
-  { name: 'AI editor', tag: 'New', text: 'Say what to change in plain words', to: 'editor' },
+  { name: 'AI editor', tag: 'New', text: 'DeepSeek does the editing; you say what you want', to: 'editor' },
   { name: 'Command line', text: 'Every stage as one command', to: 'auto' },
-  { name: 'MCP', text: 'Editing tools any AI agent can call', to: 'auto' },
   { name: 'Social scheduler', tag: 'Soon', text: 'Post to every platform on a schedule', to: 'next' },
   { name: 'Export to XML', tag: 'Soon', text: 'Finish in Premiere Pro or DaVinci Resolve', to: 'next' },
   { name: 'Team workspace', tag: 'Soon', text: 'Shared projects and templates', to: 'next' },
@@ -35,12 +34,12 @@ const FEATURES = [
 ];
 
 const FAQ = [
-  ['How does clipper work?', 'You open a video. clipper checks it, transcribes it, and builds an edit: fillers and long pauses cut, captions on, zooms on the emphatic sentences. You then change anything by editing the transcript or the panels, and export.'],
+  ['How does clipper work?', 'You open a video. clipper checks it and transcribes it, and DeepSeek edits it: fillers, pauses and weak takes cut, captions on, zooms on the lines that matter, a title and callouts. You then tell it what else to change in plain words, or adjust anything by hand, and export.'],
   ['What kinds of video can I use?', 'One person talking to one camera, up to 1080p. Footage with several cameras, several speakers or a larger picture is refused with the reason, and you can override the check if it is wrong.'],
   ['Which languages are supported?', 'Transcription uses Whisper, which covers many languages. Filler-word removal knows English fillers only so far.'],
   ['Can I add captions?', 'Yes. Captions are timed to each word and come from templates you can adjust: size, position, colours, words per line, capitals. You can also copy the caption style of a short you like.'],
   ['Is it free?', 'For now, yes. The pricing page shows the plans, but paid plans are not open and nothing is charged; every account has everything.'],
-  ['What does the AI do, and what leaves my computer?', 'DeepSeek chooses the clips and plans the edit: what to cut, where to zoom, what the title says. To do that, clipper sends it the transcript text and a short description of the edit. The video and audio never leave this computer, and transcription runs locally.'],
+  ['What does the AI do, and what leaves my computer?', 'DeepSeek does the editing: it chooses the clips, decides what to cut and where to zoom, writes the title, and makes the changes you ask for. To do that, clipper sends it the transcript text and a short description of the edit. The video and audio never leave this computer, and transcription runs locally.'],
   ['Why do I need an account?', 'It keeps your videos separate from anyone else who uses this computer, and it is the base for shared workspaces later. The account is stored on this computer; no email is sent.'],
 ];
 
@@ -103,7 +102,7 @@ const terminal = () => h('div.term', { 'aria-hidden': 'true' },
     ['clipper polish talk.mp4', 'one finished video'],
     ['clipper clip long.mp4 -n 5', 'five shorts'],
     ['clipper style reference.mp4', "measure a short's look"],
-    ['claude mcp add clipper -- clipper mcp', 'hand the tools to an agent'],
+    ['clipper direct talk.clipper polish "make it tighter"', 'tell the AI editor what to change'],
   ].map(([cmd, note]) => h('span.line', h('b', '$ '), cmd, h('em', '   # ' + note), '\n'))));
 
 function editorMock() {
@@ -200,7 +199,7 @@ export function showLanding() {
     h('section.hero',
       h('div.eyebrow', 'AI video editor and clipping tool for talking-head video'),
       h('h1', 'Turn one raw take into ', h('br'), pill, ' by editing text'),
-      h('p.lead', 'Paste the path to a raw take. clipper transcribes it, cuts the fillers and pauses, captions it, sizes it, and pulls shorts out of long recordings.'),
+      h('p.lead', 'Paste the path to a raw take. clipper transcribes it and DeepSeek edits it: fillers and pauses out, captions on, zooms in, and shorts pulled out of long recordings.'),
       cfg.problems.length ? h('div.notice.bad', cfg.problems.join(' ')) : null,
       h('div.open-row', heroBar, h('span.or', 'or'), h('button.btn.lg', { onclick: () => start(heroBar.input.value) }, 'Auto-polish')),
       h('div', { id: 'preview' }, stage),
@@ -222,17 +221,17 @@ export function showLanding() {
 
     h('section.band.center', { id: 'auto' },
       h('div.eyebrow', 'Workflow automation'),
-      h('h2', 'Hand the whole edit to one command, or one agent'),
-      h('p.sub', 'Everything the editor does is also a command and an MCP tool, and all three write the same edit file.'),
+      h('h2', 'Hand the whole edit over with one command'),
+      h('p.sub', 'Everything the editor page does is also a command, for batches and scripts, and both write the same edit file.'),
       h('div.panel', terminal(),
         h('div.trio',
           h('div', h('h3', 'Auto edit'), h('p', 'One command checks, transcribes, tightens, captions, zooms and exports.')),
-          h('div', h('h3', 'Agent tools'), h('p', 'Claude Code reads the transcript, decides the cuts, places the graphics and looks at rendered frames.')),
+          h('div', h('h3', 'AI editor'), h('p', 'DeepSeek reads the transcript, decides the cuts, places the zooms and graphics, and tells you what it did.')),
           h('div', h('h3', 'Auto style'), h('p', 'Point at a short you like. clipper measures its captions, pacing and zooms and applies the closest it has.'))))),
 
     h('section.band.center', { id: 'editor' },
       h('div.eyebrow', 'AI editor'),
-      h('h2', 'Let it make the first pass. Keep the final say.'),
+      h('h2', 'DeepSeek does the editing. You keep the final say.'),
       h('p.sub', 'Tell the AI editor what to change in plain words, or delete words yourself to cut the video. Play it back without rendering.'),
       editorMock()),
 
@@ -245,8 +244,8 @@ export function showLanding() {
           h('h3', 'Brand templates'), h('p', 'Caption and graphic templates in your fonts and colours, or a style measured from a reference short.')),
         h('div.pcard', h('div.viz.viz-people', ['A', 'M', 'J'].map((c) => h('i', c)), h('i.more', '+')),
           h('h3', 'Team workspace', h('span.tag.soon', 'Soon')), h('p', 'Accounts are in. Shared projects and shared templates come next.')),
-        h('div.pcard', h('div.viz.viz-chips', ['Command line', 'MCP', 'Edit file (JSON)'].map((c) => h('span.chip.ok', c))),
-          h('h3', 'Workflow integration'), h('p', 'Drive clipper from scripts or agents, and pick the result up in the editor.')))),
+        h('div.pcard', h('div.viz.viz-chips', ['Command line', 'Edit file (JSON)', 'Templates'].map((c) => h('span.chip.ok', c))),
+          h('h3', 'Workflow integration'), h('p', 'Drive clipper from scripts and batch jobs, and pick the result up in the editor.')))),
 
     h('section.band.center', { id: 'next' },
       h('h2', 'What’s coming next'),
@@ -264,7 +263,7 @@ export function showLanding() {
         h('div', h('button.brand', { onclick: () => window.scrollTo({ top: 0, behavior: 'smooth' }) }, 'clipper', h('i', '.')),
           h('p.small', 'Your video files stay on this computer.')),
         h('div', h('h3', 'Product'), PRODUCTS.filter((p) => p.tag !== 'Soon').slice(0, 7).map((p) => h('button.link', { onclick: go(p.to) }, p.name))),
-        h('div', h('h3', 'Automation'), h('button.link', { onclick: go('auto') }, 'Command line'), h('button.link', { onclick: go('auto') }, 'MCP for agents'),
+        h('div', h('h3', 'Automation'), h('button.link', { onclick: go('auto') }, 'Command line'), h('button.link', { onclick: go('editor') }, 'AI editor'),
           h('button.link', { onclick: go('auto') }, 'Reference styles')),
         h('div', h('h3', 'Help'), h('button.link', { onclick: showPricing }, 'Pricing'), h('button.link', { onclick: go('faq') }, 'Questions'), h('button.link', { onclick: go('next') }, 'What’s next'),
           h('button.link', { onclick: () => showAuth('signin') }, 'Sign in')))),

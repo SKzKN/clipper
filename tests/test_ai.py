@@ -231,3 +231,49 @@ def test_the_editor_page_runs_an_ai_pass_as_one_undo_step(api, project):
     failed = run("/api/direct", {"project": proj, "edl": "page-ai", "instruction": "more"})
     assert failed["state"] == "failed" and "balance" in failed["error"]
     assert client.get("/api/edl", headers=auth, params={"project": proj, "edl": "page-ai"}).json()["zooms"] == []
+
+
+def test_the_ai_editor_can_do_every_kind_of_edit(api, project):
+    doc = project.new_edl("ai-all", "polish", None, "9:16")
+    music, broll = str(FIX / "music.wav"), str(FIX / "broll.mp4")
+    api.say(tool_calls=[
+        ("captions", {"template": "highlight"}),
+        ("caption_style", {"size": 6, "height": 80, "color": "#ffee00", "uppercase": False}),
+        ("cut_words", {"first": 20, "last": 23}),
+        ("transition", {"at_word": 24, "type": "crossfade"}),
+        ("zoom", {"first": 5, "last": 9, "ease": 0.3}),
+        ("sound", {"sound": "pop", "at_word": 5}),
+        ("framing", {"x": 0.4, "y": 0.35}),
+        ("loudness", {"lufs": -16}),
+        ("music", {"path": music, "level_db": -24}),
+        ("broll", {"path": broll, "first": 30, "last": 33}),
+        ("music", {"path": "/etc/hosts"}),                       # a file the user never gave: refused
+        ("graphic", {"kind": "lower_third", "text": "Sam Example", "secondary": "Editor", "at_word": 2}),
+    ])
+    zoom_id = "z1"
+    api.say(tool_calls=[("edit_item", {"id": zoom_id, "scale": 1.3}), ("edit_item", {"id": "o1", "text": "Sam E."}),
+                        ("edit_item", {"id": "nope", "scale": 2}), ("trim", {"first": 2, "last": 40})])
+    api.say("Everything is in.")
+    result = director.direct(project, doc, "do everything", files=[music, broll])
+
+    cap = doc["captions"]
+    assert cap["template"] == "highlight" and cap["overrides"]["size"] == 0.06 and cap["overrides"]["position"]["y"] == 0.8
+    assert cap["overrides"]["color"] == "#ffee00" and cap["overrides"]["uppercase"] is False
+    assert any((s.get("transition_in") or {}).get("type") == "crossfade" for s in doc["segments"])
+    assert doc["zooms"][0]["ease"] == 0.3 and doc["zooms"][0]["scale"] == 1.3
+    assert [s["sound"] for s in doc["sfx"]] == ["pop"]
+    assert doc["framing"] == {"x": 0.4, "y": 0.35} and doc["output"]["loudness"] == -16
+    assert doc["music"]["path"].endswith("music.wav") and doc["music"]["gain_db"] == -24 and doc["music"]["duck"]["enabled"]
+    assert len(doc["broll"]) == 1 and doc["broll"][0]["path"].endswith("broll.mp4")
+    lower = doc["overlays"][0]
+    assert lower["template"].startswith("lower_third/") and lower["params"] == {"name": "Sam E.", "role": "Editor"}
+    refused = [s for s in result["steps"] if not s["ok"]]
+    assert len(refused) == 2 and "not a file the user attached" in refused[0]["result"] and "No zoom or graphic" in refused[1]["result"]
+    assert Timeline(doc).duration < project.source["duration"] - 5       # the trim took the ends off
+    first = api.requests[0]["body"]["messages"][1]["content"]
+    assert "Files the user attached" in first and music in first and broll in first
+
+    # a path typed into the request counts as given; anything else does not
+    assert director._named_files(f"put {music} under it, and 'not/a/real/file.mp3' too") == [music]
+    assert {t["function"]["name"] for t in director.tool_specs()} >= {
+        "trim", "caption_style", "edit_item", "transition", "sound", "framing", "loudness", "music", "broll", "copy_style"}

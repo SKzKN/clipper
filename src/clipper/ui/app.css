@@ -428,6 +428,7 @@ textarea { width: 100%; resize: vertical; line-height: 1.45; display: block; }
 .chip.go { border: 0; cursor: pointer; font: inherit; font-size: 13px; }
 .chip.go:hover:not(:disabled) { background: var(--accent-soft); color: var(--accent-deep); }
 .chip.go:disabled { color: var(--dim); cursor: default; }
+.unchip { background: none; border: 0; padding: 0 0 0 4px; cursor: pointer; color: var(--muted); font-size: 11px; } .unchip:hover { color: var(--red); }
 .ai-steps { margin: 10px 0 0; padding-left: 18px; font-size: 13px; color: var(--muted); } .ai-steps li + li { margin-top: 4px; }
 .usage { margin-top: 16px; color: var(--muted); font-size: 13px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .hint code, .notice code { font: 12px ui-monospace, "SF Mono", Menlo, monospace; background: var(--chip); padding: 1px 6px; border-radius: 4px; }

@@ -1,8 +1,0 @@
-{
-  "mcpServers": {
-    "clipper": {
-      "command": ".venv/bin/clipper",
-      "args": ["mcp"]
-    }
-  }
-}

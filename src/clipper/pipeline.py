@@ -1,4 +1,4 @@
-"""The stages, as plain functions. The CLI and the MCP server both call these.
+"""The stages, as plain functions. The CLI, the editor page and the AI editor all call these.
 
     ingest -> transcribe -> (select) -> build EDL(s) -> edit -> render
 

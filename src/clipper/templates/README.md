@@ -60,7 +60,7 @@ A folder with two files. `kind` is one of `title_card`, `lower_third`, `keyword_
 ```jsonc
 {
   "kind": "lower_third",
-  "description": "One line an agent reads when choosing a template.",
+  "description": "One line the AI editor reads when choosing a template.",
   "default_duration": 4.0,
   "region": {"x": 0, "y": 0.74, "w": 1, "h": 0.16},   // part of the frame the overlay can touch
   "params": {

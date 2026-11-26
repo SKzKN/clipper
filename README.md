@@ -5,9 +5,9 @@ Edits single-speaker talking-head video. Two modes, one EDL format, one renderer
 - **polish** – one raw talking-head video in, one finished video out.
 - **clip** – one long video in, several shorts out.
 
-Every stage and every edit operation is also an MCP tool, so an agent (Claude Code first) can do the
-planning: read the transcript, decide what to cut, where to punch in, what the title says. The built-in
-`select` stage remains for runs with no agent.
+DeepSeek does the editing: it reads the transcript, decides what to cut, where to punch in and what the
+title says, and makes the changes itself. You tell it what else you want in plain words. There is no agent
+interface to connect; the built-in recipe only runs when DeepSeek is not connected or refuses.
 
 ## Setup
 
@@ -23,14 +23,27 @@ footage check downloads a 28 MB speaker model. Both are cached.
 
 ## The AI editor (DeepSeek)
 
-DeepSeek is the model that does the planning: it chooses the clips, and it edits by calling the same edit
-operations the page and the MCP tools use (cut, zoom, captions, graphics, transitions, sounds).
+DeepSeek is the editor. It chooses the clips, and it edits by calling the same operations the page's panels
+use. It can do everything the panels can:
+
+| | |
+|---|---|
+| Structure | cut and restore words, trim, remove fillers, shorten pauses |
+| Picture | zooms (placed, automatic, eased), the shape of the video, the framing point |
+| Captions | on or off, template, size, position, colours, words at a time, capitals |
+| Graphics | title cards, lower thirds, keyword callouts; change or remove any item |
+| Sound | sound effects, transitions, export loudness |
+| Your files | music with ducking, b-roll over chosen words, copying the style of a reference short |
+
+Music, b-roll and reference styles need a file from you: attach it in the AI panel (**Attach a file…**), or
+pass `--file` on the command line. DeepSeek may only use files you attached or named in the request.
 
 ```bash
 clipper deepseek set-key       # asks for the key with hidden input; or set DEEPSEEK_API_KEY
 clipper deepseek test          # one small call to confirm the key works
 clipper deepseek status
 clipper direct talk.clipper polish "cut the tangent about pricing and add a title"
+clipper direct talk.clipper polish "put this under it, quietly" --file bed.mp3
 ```
 
 Once a key is set, `clipper polish`, `clipper clip` and the editor's **Create** use DeepSeek by default
@@ -95,8 +108,8 @@ workspace, thumbnails, speech enhance, dubbing) are not built.
 - **Timeline:** waveform of what is kept, cut and transition markers, zoom / graphic / b-roll / sound tracks;
   click to seek, click an item to select it. Undo and redo cover every edit (⌘Z, ⇧⌘Z; Space plays).
 
-The page talks to a small server (`ui_server.py`) that calls the same functions as the CLI and the MCP
-server, so an edit made in the UI is an ordinary EDL file an agent can pick up, and the other way round.
+The page talks to a small server (`ui_server.py`) that calls the same functions as the CLI, so an edit
+made in the UI is an ordinary EDL file the command line can pick up, and the other way round.
 It listens on 127.0.0.1 only; every request needs a per-run token, and everything except the landing page
 and sign-up needs a signed-in session.
 
@@ -116,32 +129,6 @@ clipper templates                            # list caption and overlay template
 
 Results are printed as JSON; progress goes to stderr. Everything about a video lives in a project folder
 next to it, `<video name>.clipper/` (transcript, EDLs, renders, cache).
-
-## Agent interface (MCP)
-
-```bash
-claude mcp add clipper -- /absolute/path/to/clipper/.venv/bin/clipper mcp
-```
-
-(or open Claude Code in this folder: `.mcp.json` is already here.) The server tells the agent how to work;
-in short: `ingest` → `transcribe` → `get_transcript` → `create_edl` → edit tools → `render_preview` /
-`render_frame` (both return images the agent can look at) → `export`.
-
-| Group | Tools |
-|---|---|
-| Stages | `check_footage`, `ingest`, `transcribe`, `get_transcript`, `correct_transcript`, `select_clips` (fallback), `create_edl`, `auto_polish`, `list_edls`, `get_edl`, `duplicate_edl` |
-| Structure | `trim`, `cut`, `set_segments`, `remove_fillers`, `remove_pauses` |
-| Look | `set_caption_template`, `add_zoom`, `auto_zoom`, `set_transition`, `add_overlay`, `add_broll`, `set_output`, `set_framing` |
-| Sound | `set_music` (add music, with ducking), `add_sfx`, `add_sfx_on_cuts` |
-| Housekeeping | `remove_item`, `clear_items`, `list_templates` |
-| Style | `analyze_style`, `apply_style` |
-| Render | `render_preview`, `render_frame`, `export`, `job_status` |
-
-All edit tools take seconds on the EDL's **current output timeline**, the same times
-`get_transcript(edl=...)` returns. Items added with `anchor="content"` are stored against the source
-footage, so a zoom on a sentence stays on that sentence when fillers are cut afterwards.
-
-`tests/mcp_smoke.py` drives the whole server the way an agent would.
 
 ## The EDL
 
@@ -216,12 +203,13 @@ Single speaker, one camera, 1080p at most. `ingest` checks this and refuses anyt
 - no audio track.
 
 Jump cuts and punch-ins on the same camera angle are allowed (with a warning). The checks are heuristics;
-if one is wrong for your footage, `--force` (CLI) or `force=true` (MCP) continues anyway.
+if one is wrong for your footage, `--force` on the command line or **Open anyway** in the editor continues.
 
 ## Not included
 
 Hosted web app, online accounts (the editor's accounts are local), payments, cloud deployment, YouTube downloading, generated or stock b-roll,
-multi-camera. (The editor above is a local page, not a hosted service.)
+multi-camera, and an interface for outside agents (there is no MCP server: DeepSeek is the editor).
+(The editor above is a local page, not a hosted service.)
 
 ## Tests
 
@@ -229,7 +217,6 @@ multi-camera. (The editor above is a local page, not a hosted service.)
 .venv/bin/python -m pytest tests/test_core.py           # fast, no media
 .venv/bin/python tests/make_fixture.py tests/fixture    # synthetic footage (macOS `say` voice)
 .venv/bin/python -m pytest                              # everything, about a minute
-.venv/bin/python tests/mcp_smoke.py tests/fixture       # the MCP server, end to end
 # tests/test_ui.py covers the UI server's API, accounts included; the page itself was checked by hand in a browser
 # tests/dev_account.json is a test-only account; `clipper-ui-dev` in .claude/launch.json runs against a throwaway data folder
 ```
@@ -239,7 +226,6 @@ multi-camera. (The editor above is a local page, not a hosted service.)
 ```
 src/clipper/
   cli.py            command line
-  mcp_server.py     MCP tools
   ui_server.py      local web UI server      ui/   landing page and editor (plain HTML, CSS, JS modules)
   accounts.py       sign up, sign in, sessions (stored locally)      plans.py   pricing page data
   deepseek.py       DeepSeek client        director.py     the AI editor (clips, tool-calling edits)

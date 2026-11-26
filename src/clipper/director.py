@@ -42,6 +42,8 @@ SYSTEM = (
     "judgement as an editor would.\n"
     "- Cut whole phrases or sentences so the speech still flows; do not cut single words out of the middle of a "
     "sentence except fillers. Never cut so much that the argument stops making sense.\n"
+    "- Music, b-roll and reference styles need a file from the user. Use only the files listed as attached or named "
+    "in the request; if one is needed and none was given, say so in your answer instead of guessing a path.\n"
     "- A zoom should cover one sentence or one clause. A callout repeats two to four words the speaker is saying at "
     "that moment. A title is at most six words.\n"
     "- Tool results tell you what happened. If a tool reports a problem, fix the call or move on; do not repeat it "
@@ -135,7 +137,9 @@ def tool_specs() -> list[dict]:
               ["first", "last"]),
         _tool("zoom", "Punch in on the speaker while words first..last are spoken.",
               {"first": _WORD("first"), "last": _WORD("last"),
-               "scale": {"type": "number", "description": "How far to zoom, 1.05 to 1.5. Default 1.15."}}, ["first", "last"]),
+               "scale": {"type": "number", "description": "How far to zoom, 1.05 to 1.5. Default 1.15."},
+               "ease": {"type": "number", "description": "Seconds to ramp in and out. 0 (default) is a hard punch-in."}},
+              ["first", "last"]),
         _tool("auto_zoom", "Place punch-in zooms automatically on the most emphatic sentences.",
               {"per_minute": {"type": "number", "description": "How many per minute, 1 to 12."}}, ["per_minute"]),
         _tool("graphic", "Add a motion graphic. title_card: a title, usually at the very start. lower_third: the "
@@ -158,11 +162,58 @@ def tool_specs() -> list[dict]:
               {"id": {"type": "string"}}, ["id"]),
         _tool("clear", "Remove every item of one kind.",
               {"kind": {"type": "string", "enum": ["zooms", "overlays", "sfx", "transitions"]}}, ["kind"]),
+        _tool("trim", "Keep only the part of the video from word first to word last; everything before and after goes.",
+              {"first": _WORD("first"), "last": _WORD("last")}, ["first", "last"]),
+        _tool("caption_style", "Adjust how the captions look. Give only what should change.",
+              {"size": {"type": "number", "description": "Text height as a percentage of the video height, 2 to 10."},
+               "height": {"type": "number", "description": "Vertical position, percent from the top: 8 (top) to 92 (bottom)."},
+               "max_words": {"type": "integer", "description": "Words shown at a time, 1 to 8."},
+               "color": {"type": "string", "description": "Text colour as #rrggbb."},
+               "highlight_color": {"type": "string", "description": "Colour of the word being spoken, #rrggbb (highlight template)."},
+               "uppercase": {"type": "boolean"}}),
+        _tool("edit_item", "Change an existing zoom or graphic by its id. Give only what should change.",
+              {"id": {"type": "string"}, "scale": {"type": "number", "description": "Zoom strength, 1.05 to 2."},
+               "ease": {"type": "number", "description": "Zoom ramp in seconds; 0 is a hard punch-in."},
+               "text": {"type": "string", "description": "A graphic's main text."},
+               "secondary": {"type": "string", "description": "A graphic's second line."},
+               "seconds": {"type": "number", "description": "How long a graphic stays."}}, ["id"]),
+        _tool("transition", "Put a transition on the cut nearest to a word, or type 'cut' to remove one.",
+              {"at_word": _WORD("nearest"), "type": {"type": "string", "enum": ["cut", *TRANSITIONS]}}, ["at_word", "type"]),
+        _tool("sound", "Play one sound effect at a word.",
+              {"sound": {"type": "string", "enum": list(audio_mod.BUILTIN_SFX)}, "at_word": _WORD("")}, ["sound", "at_word"]),
+        _tool("framing", "Move the point of the picture that the crop and the zooms hold in place. Only on request: you cannot see the picture.",
+              {"x": {"type": "number", "description": "0 is the left edge, 1 the right."},
+               "y": {"type": "number", "description": "0 is the top edge, 1 the bottom."}}, ["x", "y"]),
+        _tool("loudness", "Set how loud the exported video is, in LUFS (-24 quiet to -9 loud; -14 is usual).",
+              {"lufs": {"type": "number"}}, ["lufs"]),
+        _tool("music", "Background music from a file the user gave, ducked under the voice. Or change its level, or remove it.",
+              {"path": {"type": "string", "description": "A file the user attached or named. Leave out to change the music already there."},
+               "level_db": {"type": "number", "description": "Loudness of the music, -40 to -6. Default -20."},
+               "duck": {"type": "boolean", "description": "Lower the music while the speaker talks. Default true."},
+               "remove": {"type": "boolean"}}),
+        _tool("broll", "Cover the speaker with a clip or image the user gave while words first..last are spoken; the voice keeps playing.",
+              {"path": {"type": "string", "description": "A file the user attached or named."},
+               "first": _WORD("first"), "last": _WORD("last")}, ["path", "first", "last"]),
+        _tool("copy_style", "Make this video look like a reference short the user gave: measure its captions, pacing, zooms and "
+              "transitions and apply the closest available. Takes a video file, or a .style.json measured earlier.",
+              {"path": {"type": "string", "description": "A file the user attached or named."}}, ["path"]),
         _tool("read_edit", "Read the transcript and the edit as they are now, after your changes."),
     ]
 
 
-def _run_tool(project: Project, doc: dict, words: list[dict], name: str, a: dict) -> str:
+def _user_file(path: str, allowed: set[str]) -> str:
+    """A file tool may only touch files the user attached or named in the request, never one the model came up with."""
+    from pathlib import Path
+
+    given = str(path or "").strip().strip('"').strip("'")
+    if given not in allowed and str(Path(given).expanduser()) not in allowed:
+        raise ClipperError(f"{given!r} is not a file the user attached or named. Ask them to attach it.")
+    if not Path(given).expanduser().exists():
+        raise ClipperError(f"Nothing found at {given}.")
+    return str(Path(given).expanduser())
+
+
+def _run_tool(project: Project, doc: dict, words: list[dict], name: str, a: dict, files: set[str] = frozenset()) -> str:
     tl = Timeline(doc)
     if name == "remove_fillers":
         r = ops.remove_fillers(doc, words)
@@ -181,7 +232,8 @@ def _run_tool(project: Project, doc: dict, words: list[dict], name: str, a: dict
         start, end = _word_span(tl, words, int(a["first"]), int(a["last"]))
         end = max(end, start + 0.6)
         scale = min(1.5, max(1.05, float(a.get("scale", 1.15))))
-        item = ops.add_zoom(doc, start, min(end, tl.duration), scale)["added"]
+        ease = min(1.0, max(0.0, float(a.get("ease") or 0.0)))
+        item = ops.add_zoom(doc, start, min(end, tl.duration), scale, ease)["added"]
         return f"Zoom {item['id']} added at {start:.1f}-{end:.1f}s, {scale}x."
     if name == "auto_zoom":
         r = ops.auto_zoom(doc, words, project.word_levels(), per_minute=min(12.0, max(0.0, float(a["per_minute"]))))
@@ -220,6 +272,102 @@ def _run_tool(project: Project, doc: dict, words: list[dict], name: str, a: dict
     if name == "clear":
         ops.clear_items(doc, a["kind"])
         return f"Removed all {a['kind']}."
+    if name == "trim":
+        start, end = _word_span(tl, words, int(a["first"]), int(a["last"]))
+        ops.trim(doc, max(0.0, start - 0.1), min(tl.duration, end + 0.2))
+        return f"Trimmed to words {a['first']}-{a['last']}. The video is now {Timeline(doc).duration:.1f}s."
+    if name == "caption_style":
+        cap = doc["captions"]
+        if not cap.get("template"):
+            raise ClipperError("Captions are off. Turn them on with the captions tool first.")
+        tpl = templates_mod.load_caption_template(cap["template"], cap.get("overrides"))
+        over = dict(cap.get("overrides") or {})
+        if a.get("size") is not None:
+            over["size"] = round(min(10.0, max(2.0, float(a["size"]))) / 100, 4)
+        if a.get("height") is not None:
+            over["position"] = {"x": tpl["position"]["x"], "y": round(min(92.0, max(8.0, float(a["height"]))) / 100, 3)}
+        if a.get("max_words") is not None:
+            over["max_words"] = min(8, max(1, int(a["max_words"])))
+            over["max_chars"] = max(tpl["max_chars"], over["max_words"] * 7)
+        for key in ("color", "highlight_color"):
+            if a.get(key):
+                over[key] = str(a[key])
+        if a.get("uppercase") is not None:
+            over["uppercase"] = bool(a["uppercase"])
+        ops.set_captions(doc, cap["template"], True, over)
+        return "Captions changed: " + ", ".join(sorted(k for k in a if a[k] is not None)) + "."
+    if name == "edit_item":
+        item = next((i for kind in ("zooms", "overlays") for i in doc[kind] if i["id"] == a["id"]), None)
+        if not item:
+            raise ClipperError(f"No zoom or graphic has the id {a['id']!r}. Ids are in the edit summary.")
+        fields: dict = {}
+        if "scale" in item:
+            if a.get("scale") is not None:
+                fields["scale"] = min(2.0, max(1.05, float(a["scale"])))
+            if a.get("ease") is not None:
+                fields["ease"] = min(1.0, max(0.0, float(a["ease"])))
+        else:
+            tpl = templates_mod.load_overlay_template(item["template"])
+            text_keys = [k for k, spec in tpl["params"].items() if spec.get("type") == "text"]
+            params = dict(item.get("params") or {})
+            if a.get("text"):
+                params[text_keys[0]] = str(a["text"]).strip()
+            if a.get("secondary") and len(text_keys) > 1:
+                params[text_keys[1]] = str(a["secondary"]).strip()
+            if params != (item.get("params") or {}):
+                fields["params"] = params
+            if a.get("seconds") is not None:
+                fields["duration"] = float(a["seconds"])
+        if not fields:
+            raise ClipperError("Nothing to change: give a field that applies to this item.")
+        ops.update_item(doc, a["id"], fields)
+        return f"Changed {a['id']}: {', '.join(fields)}."
+    if name == "transition":
+        at = _word_span(tl, words, int(a["at_word"]), int(a["at_word"]))[0]
+        r = ops.set_transition(doc, at, a["type"])
+        return f"Transition set: {json.dumps(r, ensure_ascii=False, default=str)[:200]}"
+    if name == "sound":
+        at = _word_span(tl, words, int(a["at_word"]), int(a["at_word"]))[0]
+        item = ops.add_sfx(doc, at, a["sound"])["added"]
+        return f"Sound {item['id']} ({a['sound']}) added at {at:.1f}s."
+    if name == "framing":
+        ops.set_framing(doc, float(a["x"]), float(a["y"]))
+        return f"The crop now holds the point {float(a['x']):.2f}, {float(a['y']):.2f}."
+    if name == "loudness":
+        lufs = min(-9.0, max(-24.0, float(a["lufs"])))
+        ops.set_output(doc, loudness=lufs)
+        return f"Export loudness is {lufs:g} LUFS."
+    if name == "music":
+        current = doc.get("music")
+        if a.get("remove"):
+            ops.set_music(doc, None)
+            return "Music removed."
+        path = _user_file(a["path"], files) if a.get("path") else (current or {}).get("path")
+        if not path:
+            raise ClipperError("There is no music yet, and no file was given. The user has to attach a music file.")
+        level = float(a["level_db"]) if a.get("level_db") is not None else (current or {}).get("gain_db", -20.0)
+        duck = bool(a["duck"]) if a.get("duck") is not None else ((current or {}).get("duck") or {}).get("enabled", True)
+        ops.set_music(doc, path, min(-6.0, max(-40.0, level)), duck)
+        return f"Music is on at {min(-6.0, max(-40.0, level)):g} dB, {'ducked under the voice' if duck else 'not ducked'}."
+    if name == "broll":
+        start, end = _word_span(tl, words, int(a["first"]), int(a["last"]))
+        item = ops.add_broll(doc, _user_file(a["path"], files), start, min(tl.duration, max(end, start + 0.5)))["added"]
+        return f"B-roll {item['id']} covers {start:.1f}-{end:.1f}s."
+    if name == "copy_style":
+        from pathlib import Path
+
+        from . import pipeline
+        from .style_apply import apply_style, load_style
+
+        path = _user_file(a["path"], files)
+        if path.endswith(".json"):
+            spec = load_style(path)
+        else:
+            out = project.dir / "styles" / f"{Path(path).stem}.style.json"
+            spec, _ = pipeline.style_from_reference(path, str(out))
+        report = apply_style(doc, spec, words, project.word_levels())
+        short = {k: report.get(k, []) for k in ("matched", "approximated", "unmatched")}
+        return "Style applied. " + json.dumps(short, ensure_ascii=False)[:1500]
     if name == "read_edit":
         return edit_summary(doc) + "\n\n" + listing(doc, words)
     raise ClipperError(f"There is no tool called {name!r}.")
@@ -232,7 +380,13 @@ def _describe(name: str, a: dict) -> str:
         return f"{verb} words {a.get('first')}-{a.get('last')}" + (f": {a['reason']}" if a.get("reason") else "")
     if name == "graphic":
         return f"Added a {str(a.get('kind', 'graphic')).replace('_', ' ')}: {a.get('text', '')}"
-    labels = {"remove_fillers": "Removed fillers", "shorten_pauses": "Shortened pauses", "auto_zoom": "Placed zooms",
+    if name in ("trim", "broll"):
+        return f"{'Trimmed to' if name == 'trim' else 'B-roll over'} words {a.get('first')}-{a.get('last')}"
+    labels = {"caption_style": "Changed the caption look", "edit_item": f"Changed {a.get('id')}",
+              "transition": f"Transition: {a.get('type')}", "sound": f"Sound: {a.get('sound')}", "framing": "Moved the crop",
+              "loudness": f"Loudness: {a.get('lufs')} LUFS", "music": "Removed the music" if a.get("remove") else "Set the music",
+              "copy_style": "Copied the reference style",
+              "remove_fillers": "Removed fillers", "shorten_pauses": "Shortened pauses", "auto_zoom": "Placed zooms",
               "captions": f"Captions: {a.get('template')}", "shape": f"Shape: {a.get('aspect')}",
               "transitions": f"Transitions: {a.get('type')}", "sounds": f"Sounds: {a.get('sound')}",
               "remove": f"Removed {a.get('id')}", "clear": f"Removed all {a.get('kind')}", "read_edit": "Read the edit"}
@@ -241,16 +395,46 @@ def _describe(name: str, a: dict) -> str:
 
 # ---- the two jobs -------------------------------------------------------------------------
 
-def direct(project: Project, doc: dict, instruction: str | None = None) -> dict:
-    """Let DeepSeek edit ``doc`` in place. Returns what it said and did. Raises ClipperError if it cannot run."""
+def _named_files(request: str) -> list[str]:
+    """Paths the user typed into the request itself: quoted, or bare (which may contain spaces). Only files that exist count."""
+    import re
+    from pathlib import Path
+
+    found: list[str] = []
+
+    def add(candidate: str) -> bool:
+        candidate = candidate.strip().rstrip(".,;")
+        if candidate and candidate not in found and Path(candidate).expanduser().is_file():
+            found.append(candidate)
+            return True
+        return candidate in found
+
+    for quoted in re.findall(r"""["']([^"']+)["']""", request):
+        add(quoted)
+    for start in re.finditer(r"(?<![\w/.~])[~/]", request):
+        rest = request[start.start():start.start() + 400]
+        ends = sorted({i for i, ch in enumerate(rest) if ch in " \t\n,;"} | {len(rest)}, reverse=True)
+        any(add(rest[:end]) for end in ends)      # the longest stretch that is a real file
+    return found
+
+
+def direct(project: Project, doc: dict, instruction: str | None = None, files: list[str] | None = None) -> dict:
+    """Let DeepSeek edit ``doc`` in place. Returns what it said and did. Raises ClipperError if it cannot run.
+    ``files`` are music, b-roll or reference files the user attached; the model may use those and no others."""
+    from pathlib import Path
+
     if not project.has_transcript():
         raise ClipperError("Transcribe the video first: the AI editor works from the transcript.")
     words = project.words()
     request = (instruction or "").strip() or DEFAULT_BRIEF
+    given = [str(f) for f in (files or []) if str(f).strip()] + _named_files(request)
+    allowed = set(given) | {str(Path(f).expanduser()) for f in given}
     messages = [
         {"role": "system", "content": SYSTEM},
-        {"role": "user", "content": f"Request: {request}\n\nThe edit now: {edit_summary(doc)}\n\n"
-                                    f"<transcript>\n{listing(doc, words)}\n</transcript>"},
+        {"role": "user", "content": f"Request: {request}\n\n"
+                                    + ("Files the user attached (use these exact paths):\n" + "\n".join(f"- {f}" for f in given) + "\n\n"
+                                       if given else "")
+                                    + f"The edit now: {edit_summary(doc)}\n\n<transcript>\n{listing(doc, words)}\n</transcript>"},
     ]
     tools, steps, model_name = tool_specs(), [], deepseek.model()
     for round_no in range(MAX_ROUNDS):
@@ -270,7 +454,7 @@ def direct(project: Project, doc: dict, instruction: str | None = None) -> dict:
                 if not isinstance(parsed, dict):
                     raise ValueError("the arguments must be a JSON object")
                 args = parsed
-                result, ok = _run_tool(project, doc, words, name, args), True
+                result, ok = _run_tool(project, doc, words, name, args, allowed), True
             except KeyError as exc:
                 result, ok = f"Problem: the argument {exc} is missing.", False
             except (ClipperError, TypeError, ValueError) as exc:

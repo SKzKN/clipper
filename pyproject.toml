@@ -1,7 +1,7 @@
 [project]
 name = "clipper"
 version = "0.2.0"
-description = "Talking-head video editor: clip mode (long video -> shorts) and polish mode (raw take -> finished video), driven by an EDL and exposed as an MCP server."
+description = "Talking-head video editor: clip mode (long video -> shorts) and polish mode (raw take -> finished video), driven by an EDL, with DeepSeek as the editor."
 requires-python = ">=3.11"
 dependencies = [
     "numpy>=1.26",
@@ -10,7 +10,6 @@ dependencies = [
     "opencv-python-headless>=4.9",
     "pillow>=10",
     "playwright>=1.48",
-    "mcp>=1.2",
     "starlette>=0.40",
     "uvicorn>=0.30",
     "imageio-ffmpeg>=0.5",

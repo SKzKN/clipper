@@ -175,7 +175,7 @@ def cmd_direct(args) -> None:
     proj = Project.open(args.project)
     pipeline.use_ai(True)
     doc = proj.load_edl(args.edl)
-    result = director.direct(proj, doc, " ".join(args.instruction))
+    result = director.direct(proj, doc, " ".join(args.instruction), args.file)
     proj.save_edl(doc)
     out({**result, "edl": summary(doc)})
 
@@ -202,10 +202,6 @@ def cmd_account(args) -> None:
         raise ClipperError(str(exc)) from exc
 
 
-def cmd_mcp(args) -> None:
-    from .mcp_server import main as mcp_main
-
-    mcp_main()
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -289,6 +285,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("project")
     p.add_argument("edl")
     p.add_argument("instruction", nargs="*", help="what to change; leave out for the standard finish")
+    p.add_argument("--file", action="append", default=[], help="music, b-roll or a reference short the AI may use (repeatable)")
     p.set_defaults(func=cmd_direct)
 
     p = sub.add_parser("account", help="list the editor's accounts, reset a password or remove an account")
@@ -298,7 +295,6 @@ def build_parser() -> argparse.ArgumentParser:
 
     sub.add_parser("templates", help="list caption and overlay templates").set_defaults(func=cmd_templates)
     sub.add_parser("doctor", help="check that everything clipper needs is installed").set_defaults(func=cmd_doctor)
-    sub.add_parser("mcp", help="run the MCP server on stdio (for Claude Code and other agents)").set_defaults(func=cmd_mcp)
     return parser
 
 

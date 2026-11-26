@@ -1,7 +1,7 @@
 """Built-in clip selection: the fallback `select` stage for headless runs.
 
-When an agent is connected over MCP it does the choosing itself (it reads the
-transcript and calls create_clip). This module is for runs with no agent:
+DeepSeek normally does the choosing (see director.choose_clips). The scoring in
+this module is what runs when DeepSeek is not connected or refuses:
 
 * heuristic (default) - scores windows of whole sentences, no network needed;
 * DeepSeek (`use_llm=True`, or by default once a key is set) - asks the model

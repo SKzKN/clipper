@@ -67,7 +67,7 @@ def set_sinks(log_sink=None, progress_sink=None) -> None:
 
 
 def log(msg: str) -> None:
-    """All diagnostics go to stderr: stdout belongs to the MCP transport."""
+    """All diagnostics go to stderr: stdout carries the command's JSON result."""
     print(msg, file=sys.stderr, flush=True)
     sink = getattr(_local, "log", None)
     if sink:

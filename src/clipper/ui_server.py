@@ -1,7 +1,7 @@
 """Local web UI: `clipper ui`.
 
 A small HTTP server on 127.0.0.1 that serves the editor page and a JSON API
-over the same functions the CLI and the MCP server use. Nothing leaves the
+over the same functions the CLI and the AI editor use. Nothing leaves the
 machine. Requests need the per-run token embedded in the page, so other web
 pages open in the browser cannot call the API or read files through it.
 
@@ -451,12 +451,13 @@ def ep_direct(request, body):
     proj = _project(body)
     name = body["edl"]
     instruction = str(body.get("instruction") or "").strip()[:2000]
+    files = [str(f) for f in (body.get("files") or [])][:8]
     pipeline.use_ai(True)
 
     def work():
         before = proj.load_edl(name)
         doc = copy.deepcopy(before)
-        result = director.direct(proj, doc, instruction)
+        result = director.direct(proj, doc, instruction, files)
         with _lock:
             _push_history(proj, before)
             proj.save_edl(doc)

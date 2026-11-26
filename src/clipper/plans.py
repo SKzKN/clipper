@@ -24,13 +24,13 @@ PLANS = [
      "minutes": 300, "popular": True,
      "features": ["300 minutes of video a month", "Everything in Starter, plus:", "Title cards, lower thirds and callouts",
                   "Your own b-roll, music and sound effects", "Transitions", "Every shape: 9:16, 1:1, 4:5, 16:9",
-                  "Copy the style of a reference short", "Command line and MCP for agents", "4 brand templates",
+                  "Copy the style of a reference short", "Command line for batch runs", "4 brand templates",
                   {"text": "Social scheduler", "soon": True}, {"text": "Export to Premiere Pro and DaVinci Resolve", "soon": True},
                   {"text": "Speech enhance and dubbing", "soon": True}, {"text": "Team workspace with 2 seats", "soon": True}]},
     {"id": "business", "name": "Business", "tagline": "For organisations that need a tailored set-up", "monthly": None,
      "yearly": None, "minutes": None,
      "features": ["Everything in Pro, plus:", "Minutes and seats sized to your team", "Your own templates and fonts built in",
-                  "Help setting up agents and automation", "Priority support"]},
+                  "Help setting up batch runs and automation", "Priority support"]},
 ]
 
 # The comparison table: one row per feature, one value per plan in the order above.
@@ -74,7 +74,6 @@ COMPARE = [
     ]),
     ("Automation", [
         ("Command line", [False, False, True, True]),
-        ("MCP for AI agents", [False, False, True, True]),
     ]),
     ("Team", [
         ("Team workspace", [False, False, "soon", "soon"]),

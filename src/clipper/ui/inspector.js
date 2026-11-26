@@ -60,22 +60,29 @@ const PANELS = {
   AI() {
     const ready = S.cfg.ai.ready;
     const note = (S.edl.notes || []).find((n) => n.kind === 'ai');
-    const st = PANELS.AI.state || (PANELS.AI.state = { text: '' });
+    const st = PANELS.AI.state || (PANELS.AI.state = { text: '', files: [] });
+    const redraw = () => renderInspector(document.querySelector('.inspector'));
     const box = h('textarea', { rows: 4, value: st.text, disabled: !ready, 'aria-label': 'What to change',
-      placeholder: 'Say what to change. For example: cut the part about pricing, and add a title.',
+      placeholder: 'Say what to change. For example: cut the part about pricing, add a title, and put the attached music under it.',
       oninput: (e) => { st.text = e.target.value; } });
-    const run = (text) => { st.text = ''; ctx.direct(text); };
+    const run = (text) => { const files = st.files; st.text = ''; st.files = []; ctx.direct(text, files); };
     return [
       h('h2', 'AI editor'),
       ready ? null : h('div.notice.warn', 'DeepSeek is not connected yet. In a terminal, run ', h('code', 'clipper deepseek set-key'),
         ' and start clipper again.'),
-      h('p.muted.small', 'DeepSeek reads the transcript and edits for you: cuts, zooms, captions, graphics, transitions. It works from the words; it cannot see or hear the video.'),
+      h('p.muted.small', 'DeepSeek does the editing: cuts and trims, zooms, captions and how they look, graphics, transitions, sounds, music, b-roll, the shape of the video, and copying the style of a reference short. It works from the words; it cannot see or hear the video.'),
       box,
+      h('div.row.wrap', { style: { marginTop: '8px' } },
+        S.cfg.can_pick ? h('button.btn.sm', { disabled: !ready, title: 'Music, a b-roll clip or image, or a reference short',
+          onclick: async () => { const p = await ctx.pickFile('any'); if (p && !st.files.includes(p)) { st.files.push(p); redraw(); } } }, 'Attach a file…')
+          : h('span.hint', 'To use music, b-roll or a reference short, put the file’s full path in your request.'),
+        st.files.map((f) => h('span.chip', { title: f }, basename(f), ' ',
+          h('button.unchip', { 'aria-label': 'Remove ' + basename(f), onclick: () => { st.files = st.files.filter((x) => x !== f); redraw(); } }, '✕')))),
       h('div.row.wrap', { style: { marginTop: '8px' } },
         h('button.btn.primary', { disabled: !ready, onclick: () => (box.value.trim() ? run(box.value) : toast('Say what to change first, or use "Finish it for me".')) }, 'Do it'),
         h('button.btn', { disabled: !ready, title: 'Tighten, zoom, title and callouts, chosen by the AI', onclick: () => run('') }, 'Finish it for me')),
       h('div.chips', { style: { marginTop: '12px' } },
-        ['Make it tighter', 'Add a title card', 'More zooms', 'Fewer zooms', 'Cut the weakest part'].map((text) =>
+        ['Make it tighter', 'Add a title card', 'More zooms', 'Bigger captions', 'Make it square', 'Cut the weakest part'].map((text) =>
           h('button.chip.go', { disabled: !ready, onclick: () => run(text) }, text))),
       note ? [h('h2', 'Last pass'), h('p', note.summary), h('p.muted.small', { style: { marginTop: '6px' } }, 'You asked: ' + note.request),
         note.steps.length ? h('ul.ai-steps', note.steps.map((step) => h('li', step))) : null] : null,
