@@ -1,0 +1,12 @@
+{
+  "kind": "title_card",
+  "description": "Full-frame dark scrim with a large centred title and an optional subtitle. Fades in and out.",
+  "default_duration": 2.5,
+  "region": {"x": 0, "y": 0, "w": 1, "h": 1},
+  "params": {
+    "title": {"type": "text", "required": true, "description": "Main line"},
+    "subtitle": {"type": "text", "default": "", "description": "Smaller second line (optional)"},
+    "color": {"type": "color", "default": "#FFFFFF", "description": "Text colour"},
+    "accent": {"type": "color", "default": "#FFD400", "description": "Rule under the title"}
+  }
+}

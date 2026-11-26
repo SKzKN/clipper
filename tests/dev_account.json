@@ -1,0 +1,6 @@
+{
+  "_note": "Test-only account for the automated tests and for trying the editor against a throwaway data folder. Not a real person or password.",
+  "name": "Dev Tester",
+  "email": "dev@clipper.test",
+  "password": "clipper-dev-only-7391"
+}

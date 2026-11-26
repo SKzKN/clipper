@@ -1,0 +1,191 @@
+{
+  "version": 1,
+  "name": "agent-clip",
+  "mode": "clip",
+  "source": {
+    "path": "tests/fixture/talk.mp4",
+    "duration": 29.133,
+    "width": 1920,
+    "height": 1080,
+    "fps": 30.0
+  },
+  "output": {
+    "aspect": "9:16",
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "loudness": -14.0
+  },
+  "framing": {
+    "x": 0.5,
+    "y": 0.42
+  },
+  "segments": [
+    {
+      "id": "s001",
+      "start": 6.98,
+      "end": 8.77
+    },
+    {
+      "id": "s002",
+      "start": 9.51,
+      "end": 12.37,
+      "transition_in": {
+        "type": "dip_black",
+        "duration": 0.4
+      }
+    },
+    {
+      "id": "s003",
+      "start": 14.07,
+      "end": 18.58
+    },
+    {
+      "id": "s004",
+      "start": 20.19,
+      "end": 25.37
+    },
+    {
+      "id": "s005",
+      "start": 26.27,
+      "end": 27.8
+    }
+  ],
+  "captions": {
+    "enabled": true,
+    "template": "highlight",
+    "overrides": {}
+  },
+  "zooms": [
+    {
+      "id": "z1",
+      "start": 7.937,
+      "end": 11.38,
+      "anchor": "source",
+      "scale": 1.2,
+      "ease": 0.0
+    },
+    {
+      "id": "z2",
+      "start": 7.08,
+      "end": 12.14,
+      "anchor": "source",
+      "scale": 1.15,
+      "ease": 0.0,
+      "auto": true,
+      "on": "The first mistake is, cutting too slowly, nobody has time fo"
+    },
+    {
+      "id": "z3",
+      "start": 20.24,
+      "end": 25.2,
+      "anchor": "source",
+      "scale": 1.15,
+      "ease": 0.0,
+      "auto": true,
+      "on": "and the third mistake is never adding captions, 80 % of peop"
+    }
+  ],
+  "overlays": [
+    {
+      "id": "o1",
+      "template": "title_card/plain-center",
+      "start": 0.0,
+      "duration": 1.6,
+      "anchor": "timeline",
+      "params": {
+        "title": "3 editing mistakes",
+        "subtitle": "and how to fix them"
+      }
+    },
+    {
+      "id": "o2",
+      "template": "lower_third/plain-bar",
+      "start": 9.7,
+      "duration": 4.0,
+      "anchor": "source",
+      "params": {
+        "name": "Sam Example",
+        "role": "Video editor"
+      }
+    },
+    {
+      "id": "o3",
+      "template": "keyword_callout/plain-underline",
+      "start": 11.66,
+      "duration": 1.8,
+      "anchor": "source",
+      "params": {
+        "text": "captions"
+      }
+    }
+  ],
+  "broll": [
+    {
+      "id": "b1",
+      "path": "tests/fixture/broll.mp4",
+      "start": 17.4,
+      "end": 21.033,
+      "anchor": "source",
+      "source_in": 0.0,
+      "fit": "cover",
+      "still": false
+    }
+  ],
+  "music": {
+    "path": "tests/fixture/music.wav",
+    "gain_db": -18.0,
+    "offset": 0.0,
+    "fade_in": 0.5,
+    "fade_out": 1.5,
+    "duck": {
+      "enabled": true,
+      "amount_db": -10.0,
+      "attack": 0.08,
+      "release": 0.5
+    }
+  },
+  "sfx": [
+    {
+      "id": "x1",
+      "sound": "whoosh",
+      "at": 7.937,
+      "anchor": "source",
+      "gain_db": -10.0,
+      "auto": true
+    },
+    {
+      "id": "x2",
+      "sound": "whoosh",
+      "at": 14.067,
+      "anchor": "source",
+      "gain_db": -10.0,
+      "auto": true
+    },
+    {
+      "id": "x3",
+      "sound": "whoosh",
+      "at": 20.2,
+      "anchor": "source",
+      "gain_db": -10.0,
+      "auto": true
+    },
+    {
+      "id": "x4",
+      "sound": "whoosh",
+      "at": 26.267,
+      "anchor": "source",
+      "gain_db": -10.0,
+      "auto": true
+    },
+    {
+      "id": "x5",
+      "sound": "pop",
+      "at": 7.967,
+      "anchor": "source",
+      "gain_db": -8.0
+    }
+  ],
+  "notes": [],
+  "title": "Mistakes"
+}

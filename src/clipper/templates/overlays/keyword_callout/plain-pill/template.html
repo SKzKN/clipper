@@ -1,0 +1,15 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><style>
+html,body{margin:0;width:100vw;height:100vh;background:transparent;overflow:hidden}
+body{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;color:var(--param-color,#fff)}
+@keyframes fade-in{from{opacity:0}to{opacity:1}}
+@keyframes fade-out{from{opacity:1}to{opacity:0}}
+.wrap{position:absolute;top:12vh;height:16vh;left:0;right:0;display:flex;align-items:center;justify-content:center}
+.pill{padding:1.6vmin 4.2vmin;border-radius:99vmin;background:var(--param-background,#FFD400);
+  color:var(--param-color,#111);font-size:6vmin;font-weight:800;text-transform:uppercase;letter-spacing:.02em;
+  white-space:nowrap;box-shadow:0 .6vmin 2.4vmin rgba(0,0,0,.35);
+  animation:pop .3s cubic-bezier(.2,1.6,.4,1) both,out .2s ease-in calc(var(--duration,1.8s) - .2s) forwards}
+@keyframes pop{from{opacity:0;transform:scale(.5)}to{opacity:1;transform:scale(1)}}
+@keyframes out{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(.8)}}
+</style></head>
+<body><div class="wrap"><div class="pill" data-param="text">Keyword</div></div></body></html>

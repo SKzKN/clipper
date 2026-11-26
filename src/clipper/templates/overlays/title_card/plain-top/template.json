@@ -1,0 +1,11 @@
+{
+  "kind": "title_card",
+  "description": "White rounded box with dark text near the top of the frame; the speaker stays visible. Pops in, fades out.",
+  "default_duration": 3.0,
+  "region": {"x": 0, "y": 0.04, "w": 1, "h": 0.3},
+  "params": {
+    "title": {"type": "text", "required": true, "description": "Hook or title text"},
+    "background": {"type": "color", "default": "#FFFFFF", "description": "Box colour"},
+    "color": {"type": "color", "default": "#111111", "description": "Text colour"}
+  }
+}

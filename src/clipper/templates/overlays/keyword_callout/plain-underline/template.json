@@ -1,0 +1,11 @@
+{
+  "kind": "keyword_callout",
+  "description": "A large outlined keyword above the speaker with an accent underline that swipes in.",
+  "default_duration": 1.8,
+  "region": {"x": 0, "y": 0.11, "w": 1, "h": 0.18},
+  "params": {
+    "text": {"type": "text", "required": true, "description": "The keyword or short phrase"},
+    "color": {"type": "color", "default": "#FFFFFF", "description": "Text colour"},
+    "accent": {"type": "color", "default": "#FF3B30", "description": "Underline colour"}
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "description": "Heavy white capitals with a black outline, three words at a time, each group pops in.",
+  "font": "Arial Black",
+  "bold": true,
+  "uppercase": true,
+  "size": 0.05,
+  "outline": 0.005,
+  "position": {"x": 0.5, "y": 0.72},
+  "max_words": 3,
+  "max_chars": 16,
+  "animation": "pop"
+}

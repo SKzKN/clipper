@@ -1,0 +1,11 @@
+{
+  "kind": "keyword_callout",
+  "description": "A keyword in a coloured pill that pops in above the speaker.",
+  "default_duration": 1.8,
+  "region": {"x": 0, "y": 0.12, "w": 1, "h": 0.16},
+  "params": {
+    "text": {"type": "text", "required": true, "description": "The keyword or short phrase"},
+    "background": {"type": "color", "default": "#FFD400", "description": "Pill colour"},
+    "color": {"type": "color", "default": "#111111", "description": "Text colour"}
+  }
+}

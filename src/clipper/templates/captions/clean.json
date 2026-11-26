@@ -1,0 +1,14 @@
+{
+  "description": "Quiet sentence-case captions with a soft shadow, up to six words, fading in and out.",
+  "font": "Helvetica Neue",
+  "bold": true,
+  "uppercase": false,
+  "strip_punctuation": false,
+  "size": 0.034,
+  "outline": 0.0015,
+  "shadow": 0.002,
+  "position": {"x": 0.5, "y": 0.8},
+  "max_words": 6,
+  "max_chars": 30,
+  "animation": "fade"
+}

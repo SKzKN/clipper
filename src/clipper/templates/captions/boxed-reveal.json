@@ -1,0 +1,12 @@
+{
+  "description": "White text on a dark box, words appear one by one as they are spoken.",
+  "font": "Helvetica Neue",
+  "bold": true,
+  "uppercase": false,
+  "size": 0.038,
+  "box": {"color": "#000000", "opacity": 0.72},
+  "position": {"x": 0.5, "y": 0.76},
+  "max_words": 4,
+  "max_chars": 24,
+  "animation": "word_reveal"
+}

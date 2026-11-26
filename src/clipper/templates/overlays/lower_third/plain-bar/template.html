@@ -1,0 +1,20 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><style>
+html,body{margin:0;width:100vw;height:100vh;background:transparent;overflow:hidden}
+body{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;color:var(--param-color,#fff)}
+@keyframes fade-in{from{opacity:0}to{opacity:1}}
+@keyframes fade-out{from{opacity:1}to{opacity:0}}
+.clip{position:absolute;left:6vw;top:76vh;overflow:hidden;max-width:86vw}
+.bar{display:flex;align-items:stretch;
+  animation:in .45s cubic-bezier(.2,.8,.2,1) both,out .35s ease-in calc(var(--duration,4s) - .35s) forwards}
+.stripe{width:1vmin;background:var(--param-accent,#FFD400)}
+.text{padding:1.8vmin 3.2vmin 2vmin 2.6vmin;background:var(--param-background,#111)}
+.name{font-size:4.6vmin;font-weight:800;line-height:1.1;white-space:nowrap}
+.role{font-size:3vmin;font-weight:500;opacity:.8;margin-top:.5vmin;white-space:nowrap}
+@keyframes in{from{transform:translateX(-102%)}to{transform:none}}
+@keyframes out{from{transform:none}to{transform:translateX(-102%)}}
+</style></head>
+<body><div class="clip"><div class="bar">
+  <div class="stripe"></div>
+  <div class="text"><div class="name" data-param="name">Name</div><div class="role" data-param="role" data-if="role"></div></div>
+</div></div></body></html>

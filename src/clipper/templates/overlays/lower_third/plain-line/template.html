@@ -1,0 +1,20 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><style>
+html,body{margin:0;width:100vw;height:100vh;background:transparent;overflow:hidden}
+body{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;color:var(--param-color,#fff)}
+@keyframes fade-in{from{opacity:0}to{opacity:1}}
+@keyframes fade-out{from{opacity:1}to{opacity:0}}
+.lt{position:absolute;left:7vw;top:76.5vh;text-shadow:0 .3vmin 1.6vmin rgba(0,0,0,.7);
+  animation:fade-out .3s ease-in calc(var(--duration,4s) - .3s) forwards}
+.name{font-size:4.8vmin;font-weight:700;line-height:1.1;white-space:nowrap;animation:up .4s ease-out .1s both}
+.line{height:.45vmin;margin:1.1vmin 0;background:var(--param-accent,#fff);transform-origin:left center;
+  box-shadow:0 .2vmin 1vmin rgba(0,0,0,.5);animation:draw .5s cubic-bezier(.2,.8,.2,1) both}
+.role{font-size:3.1vmin;font-weight:500;white-space:nowrap;animation:fade-in .4s ease-out .3s both}
+@keyframes draw{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes up{from{opacity:0;transform:translateY(1.5vmin)}to{opacity:1;transform:none}}
+</style></head>
+<body><div class="lt">
+  <div class="name" data-param="name">Name</div>
+  <div class="line"></div>
+  <div class="role" data-param="role" data-if="role"></div>
+</div></body></html>

@@ -1,0 +1,29 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "clipper-ui",
+      "runtimeExecutable": ".venv/bin/clipper",
+      "runtimeArgs": [
+        "ui",
+        "--no-open",
+        "--port",
+        "8765"
+      ],
+      "port": 8765
+    },
+    {
+      "name": "clipper-ui-dev",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "CLIPPER_HOME=.dev-data",
+        ".venv/bin/clipper",
+        "ui",
+        "--no-open",
+        "--port",
+        "8766"
+      ],
+      "port": 8766
+    }
+  ]
+}

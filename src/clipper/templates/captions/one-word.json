@@ -1,0 +1,12 @@
+{
+  "description": "One big word at a time, popping in. Fast and punchy.",
+  "font": "Impact",
+  "bold": false,
+  "uppercase": true,
+  "size": 0.075,
+  "outline": 0.006,
+  "position": {"x": 0.5, "y": 0.68},
+  "max_words": 1,
+  "max_chars": 14,
+  "animation": "pop"
+}

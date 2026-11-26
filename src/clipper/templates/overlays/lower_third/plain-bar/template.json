@@ -1,0 +1,12 @@
+{
+  "kind": "lower_third",
+  "description": "Dark bar with an accent stripe, name and role, sliding in from the left near the bottom.",
+  "default_duration": 4.0,
+  "region": {"x": 0, "y": 0.74, "w": 1, "h": 0.16},
+  "params": {
+    "name": {"type": "text", "required": true, "description": "Name or main line"},
+    "role": {"type": "text", "default": "", "description": "Role or second line (optional)"},
+    "accent": {"type": "color", "default": "#FFD400", "description": "Stripe colour"},
+    "background": {"type": "color", "default": "#111111", "description": "Bar colour"}
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "kind": "lower_third",
+  "description": "Name over a thin accent line that draws on, role underneath. No box; text has a soft shadow.",
+  "default_duration": 4.0,
+  "region": {"x": 0, "y": 0.74, "w": 1, "h": 0.16},
+  "params": {
+    "name": {"type": "text", "required": true, "description": "Name or main line"},
+    "role": {"type": "text", "default": "", "description": "Role or second line (optional)"},
+    "accent": {"type": "color", "default": "#FFFFFF", "description": "Line colour"}
+  }
+}

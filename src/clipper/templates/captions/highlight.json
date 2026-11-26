@@ -1,0 +1,13 @@
+{
+  "description": "Bold capitals, four words at a time, the word being spoken turns yellow.",
+  "font": "Arial Black",
+  "bold": true,
+  "uppercase": true,
+  "size": 0.044,
+  "outline": 0.0045,
+  "position": {"x": 0.5, "y": 0.72},
+  "max_words": 4,
+  "max_chars": 20,
+  "animation": "highlight",
+  "highlight_color": "#FFD400"
+}
